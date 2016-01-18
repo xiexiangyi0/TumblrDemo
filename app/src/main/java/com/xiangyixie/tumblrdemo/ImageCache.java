@@ -42,6 +42,5 @@ public class ImageCache {
 
     public void set(String url, Bitmap img) {
         mMemCache.put(url, img);
-
     }
 }

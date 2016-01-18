@@ -3,7 +3,6 @@ package com.xiangyixie.tumblrdemo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -44,11 +43,7 @@ public class ImageLoaderTask extends AsyncTask<ImageLoaderTask.ImageLoadListener
         Bitmap bmap = null;
         try {
             URL url = new URL(imageUrl);
-            Log.d(TAG, "download image task : url == " + url);
             bmap = BitmapFactory.decodeStream((InputStream) url.getContent());
-            if(bmap == null){
-                Log.d(TAG, "bitmap == NULL");
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }

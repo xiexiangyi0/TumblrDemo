@@ -4,9 +4,9 @@ package com.xiangyixie.tumblrdemo;
  * Created by xiangyixie on 1/16/16.
  */
 public class AppConfigKey {
-    public static final String consumerKey = "Q7CZ8HlgB6R5hcVVPji3HLiIhE8QhSiPGsAfTPE19S1JQ4egyl";
-    public static final String consumerSecret = "7aenaNZaL36J6l9JHiJiKWUtTpUKm5IX8VvIUzMBs7SoYSH4A6";
+    public static final String consumerKey = "3MHUPHn5xYgS9OAOPYnWLWi4A0sHfJsK3TcB70Hads4wEG8fhx";
+    public static final String consumerSecret = "nBmbQl4avC0Lekhh4bpuK10RJvUFYq6qYE0ld51eGtot0fF2nM";
 
-    public static final String oAuthToken = "GwSCAsAE0OjoObGqoVerZIu4zKY1l9b8BfnbuT8mhJYcfO8zP2";
-    public static final String oAuthSecret = "1rEvIFEhbAKlxHWhTZmDnnSgTVMVdbahBlakiv25rmN4LlY4Yh";
+    public static final String oAuthToken = "Sn5z7aGRtZkGpGt3ZJROuvjpI8jUqFz5OsdYKRpTPooFNFIzRB";
+    public static final String oAuthSecret = "q9Nwxw0cY8dsNLKOqg4VDVn1NQKz5C8K2nUvGdqxUeC0u0Qb03";
 }

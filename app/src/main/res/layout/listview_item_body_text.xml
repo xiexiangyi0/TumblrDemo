@@ -10,6 +10,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="13dp"
+        android:paddingLeft="@dimen/listview_text_horizontal_padding"
+        android:paddingRight="@dimen/listview_text_horizontal_padding"
         android:textSize="24sp"
         android:textColor="@color/black"/>
 
@@ -19,6 +21,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="13dp"
+        android:paddingLeft="@dimen/listview_text_horizontal_padding"
+        android:paddingRight="@dimen/listview_text_horizontal_padding"
         android:textSize="18sp"
         android:textColor="@color/black"/>
 

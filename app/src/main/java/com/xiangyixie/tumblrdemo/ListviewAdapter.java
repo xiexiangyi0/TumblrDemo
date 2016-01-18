@@ -8,11 +8,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import com.tumblr.jumblr.types.Photo;
-import com.tumblr.jumblr.types.PhotoPost;
-import com.tumblr.jumblr.types.PhotoSize;
-import com.tumblr.jumblr.types.Post;
-import com.tumblr.jumblr.types.TextPost;
+import com.xiangyixie.tumblrdemo.model.TumblrPhoto;
+import com.xiangyixie.tumblrdemo.model.TumblrPhotoPost;
+import com.xiangyixie.tumblrdemo.model.TumblrPost;
+import com.xiangyixie.tumblrdemo.model.TumblrTextPost;
 import com.xiangyixie.tumblrdemo.view.PhotoBodyView;
 import com.xiangyixie.tumblrdemo.view.PostView;
 import com.xiangyixie.tumblrdemo.view.TextBodyView;
@@ -32,10 +31,10 @@ public class ListviewAdapter extends BaseAdapter {
 
     private final String TAG = "ListviewAdapter";
 
-    private List<com.tumblr.jumblr.types.Post> data = null;
+    private List<TumblrPost> data = null;
     private TumblrLoader tumblrLoader;
 
-    public ListviewAdapter(List<com.tumblr.jumblr.types.Post> data, TumblrLoader loader) {
+    public ListviewAdapter(List<TumblrPost> data, TumblrLoader loader) {
         this.data = data;
         this.tumblrLoader = loader;
     }
@@ -68,8 +67,8 @@ public class ListviewAdapter extends BaseAdapter {
             view = new PostView(parent.getContext());
         }
 
-        Post post = data.get(position);
-        Log.d(TAG, "post type = " + post.getType());
+        TumblrPost post = data.get(position);
+        Log.d(TAG, "post type " + post.getType());
 
         //header
         //blog avatar
@@ -81,13 +80,12 @@ public class ListviewAdapter extends BaseAdapter {
         view.setBlogName(blogname);
 
         //photo post
-        if (post.getType().equals("photo")) {
-            view.setBodyView(buildPhotoBody((PhotoPost)post, parent.getContext()));
+        if (post.getType() == TumblrPost.Type.PHOTO) {
+            view.setBodyView(buildPhotoBody((TumblrPhotoPost) post, parent.getContext()));
         }
         //text post
-        else if(post.getType().equals("text")){
-            TextPost textPost = (TextPost)post;
-            view.setBodyView(buildTextBody(textPost, parent.getContext()));
+        else if(post.getType() == TumblrPost.Type.TEXT){
+            view.setBodyView(buildTextBody((TumblrTextPost) post, parent.getContext()));
         }
         // default, empty
         else {
@@ -100,11 +98,11 @@ public class ListviewAdapter extends BaseAdapter {
         return view;
     }
 
-    public List<com.tumblr.jumblr.types.Post> getData() {
+    public List<TumblrPost> getData() {
         return data;
     }
 
-    public void setData(List<com.tumblr.jumblr.types.Post> data) {
+    public void setData(List<TumblrPost> data) {
         this.data = data;
     }
 
@@ -124,23 +122,17 @@ public class ListviewAdapter extends BaseAdapter {
         return s.subSequence(start, end);
     }
 
-    private PhotoBodyView buildPhotoBody(PhotoPost photoPost, Context context) {
+    private PhotoBodyView buildPhotoBody(TumblrPhotoPost photoPost, Context context) {
         PhotoBodyView photoView = new PhotoBodyView(context);
         //photos
-        List<Photo> photos = photoPost.getPhotos();
+        List<TumblrPhoto> photos = photoPost.getPhotos();
         //Log.d(TAG, "A photoPost: photo size = " + photos.size());
-        for (int i = 0; i < photos.size(); ++i) {
-            //Log.d(TAG, "photo index = " + i);
-            List<PhotoSize> allPhotos = photos.get(i).getSizes();
-            for (PhotoSize size : allPhotos) {
-                ImageView imgView = new ImageView(context);
-                photoView.addImageView(imgView);
-
-                String strUrl = size.getUrl();
-                Log.d(TAG, "listview image url = " + strUrl);
-                tumblrLoader.loadPostImage(imgView, strUrl);
-                break;
-            }
+        for (TumblrPhoto photo : photos) {
+            ImageView imgView = new ImageView(context);
+            photoView.addImageView(imgView);
+            String url = photo.getUrl();
+            Log.d(TAG, "photo url " + url);
+            tumblrLoader.loadPostImage(imgView, url);
         }
 
         //caption
@@ -159,7 +151,7 @@ public class ListviewAdapter extends BaseAdapter {
         return photoView;
     }
 
-    private TextBodyView buildTextBody(TextPost textPost, Context context) {
+    private TextBodyView buildTextBody(TumblrTextPost textPost, Context context) {
         TextBodyView bodyView = new TextBodyView(context);
         if (textPost.getTitle() == null) {
             Log.d(TAG, "null title");

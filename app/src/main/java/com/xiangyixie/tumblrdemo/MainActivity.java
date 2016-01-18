@@ -1,24 +1,33 @@
 package com.xiangyixie.tumblrdemo;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ListView;
 
-import com.tumblr.jumblr.types.Photo;
-import com.tumblr.jumblr.types.PhotoPost;
-import com.tumblr.jumblr.types.Post;
+import com.xiangyixie.tumblrdemo.model.TumblrPhoto;
+import com.xiangyixie.tumblrdemo.model.TumblrPhotoPost;
+import com.xiangyixie.tumblrdemo.model.TumblrPost;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +37,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = "MainActivity";
+    private static final String JSON_CACHE_FILE = "TumblrDemeJsonCache";
 
     private ListView listview = null;
     private ListviewAdapter adapter = null;
@@ -52,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         public void loadAvatarImage(final ImageView imageView, final String blogName) {
             if (avatarUrlCache.containsKey(blogName)) {
                 loadBitmap(imageView, avatarUrlCache.get(blogName));
-            } else {
+            } else if (isNetworkConnected()) {
                 new AvatarUrlTask(blogName, null, new AvatarUrlTask.AvatarUrlListener() {
                     @Override
                     public void onUrl(String url) {
@@ -70,12 +80,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d(TAG, "onCreate");
-        Log.d(TAG, "imageCache " + imageCache);
         imageCache = new ImageCache(1024 * 1024);
-        defaultImage = BitmapFactory.decodeResource(getResources(), R.drawable.ellipsis);
+        defaultImage = BitmapFactory.decodeResource(getResources(), R.drawable.loading);
 
-        List<Post> data = new ArrayList<>();
+        List<TumblrPost> data = new ArrayList<>();
         adapter = new ListviewAdapter(data, tumblrLoader);
         listview = (ListView) findViewById(R.id.listview);
         listview.setAdapter(adapter);
@@ -84,22 +92,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         refreshLayout = (SwipeRefreshLayout)findViewById(R.id.refresh);
         refreshLayout.setOnRefreshListener(this);
 
-        needRefresh = true;
-        //onRefresh();
-
-        if (savedInstanceState != null) {
-            int testNum = savedInstanceState.getInt("TEST_KEY");
-            Log.d(TAG, "testNUM " + testNum);
+        boolean loaded = loadFromCache();
+        if (!loaded) {
+            onRefresh();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume");
-        if (needRefresh) {
-            Log.d(TAG, "onResume refresh");
-            needRefresh = false;
+        if (adapter.getData().size() == 0) {
             onRefresh();
         }
     }
@@ -107,26 +109,30 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause");
     }
 
     @Override
     protected void onSaveInstanceState (Bundle outState) {
-        outState.putInt("TEST_KEY", 123);
-        Log.d(TAG, "testNUM save");
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onDestroy() {
-        cacheImages();
+        cachePosts();
         super.onDestroy();
 
     }
 
     @Override
     public void onRefresh() {
+
+        if (!isNetworkConnected()) {
+            refreshLayout.setRefreshing(false);
+            return;
+        }
+
         //get User Dashboard posts.
+        imageCache = new ImageCache(1024 * 1024);
         getUserDashboardTask task = new getUserDashboardTask(this, adapter, refreshLayout);
         refreshTaskRef = new WeakReference<getUserDashboardTask>(task);
         task.execute();
@@ -138,11 +144,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             return;
         }
 
-        Log.d(TAG, "loadBitmap " + url);
+        if (!isNetworkConnected()) {
+            return;
+        }
 
         boolean cancelled = cancelPotentialLoading(imageView, url);
         if (cancelled) {
-            Log.d(TAG, "loadBitmap cancelled");
             final WeakReference<ImageView> imageViewRef =
                     new WeakReference<ImageView>(imageView);
             final ImageLoaderTask task = new ImageLoaderTask(url);
@@ -153,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             task.execute(new ImageLoaderTask.ImageLoadListener() {
                 @Override
                 public void onBitmap(Bitmap bitmap) {
-                    Log.d(TAG, "onBitmap " + url);
+                    //Log.d(TAG, "onBitmap " + bitmap);
                     ImageView localImageView = imageViewRef.get();
                     if (localImageView != null && bitmap != null) {
                         ImageLoaderTask localTask =
@@ -177,12 +184,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 task.cancel(true);
                 return true;
             } else {
-                Log.d(TAG, "taskUrl " + taskUrl);
-                Log.d(TAG, "url " + url);
                 return false;
             }
         } else {
-            Log.d(TAG, "task == null");
             return true;
         }
     }
@@ -197,26 +201,27 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
             return asyncDrawable.getImageLoaderTask();
         } else {
-            Log.d(TAG, "drawable == null " + drawable);
             return null;
         }
     }
 
-    private void cacheImages() {
-        List<Post> data = adapter.getData();
-        Log.d(TAG, "cacheImages " + data);
+    private void cachePosts() {
+        List<TumblrPost> data = adapter.getData();
         if (data == null) {
             return;
         }
 
         JSONArray jarray = new JSONArray();
 
-        for (Post post : data) {
+        for (TumblrPost post : data) {
             JSONObject jobj = null;
-            Log.d(TAG, post.getType().toString());
             try {
-                if (post.getType().equals("photo")) {
-                    jobj = dumpPhotoPost((PhotoPost) post);
+                if (post.getType() != TumblrPost.Type.UNSUPPORT) {
+                    jobj = post.toJson();
+                    if (post.getType() == TumblrPost.Type.PHOTO) {
+                        TumblrPhotoPost photoPost = (TumblrPhotoPost) post;
+                        cachePhotos(photoPost.getPhotos());
+                    }
                 }
             } catch (JSONException e) {
             }
@@ -226,20 +231,120 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             }
         }
 
-        Log.d(TAG, "dump " + jarray.length() + " posts");
+        File cacheFile = new File(getCacheDir(), JSON_CACHE_FILE);
+        FileOutputStream outputStream;
+        try {
+            outputStream = new FileOutputStream(cacheFile);
+            outputStream.write(jarray.toString().getBytes());
+            outputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private static JSONObject dumpPhotoPost(PhotoPost post) throws JSONException {
-        JSONObject jobj = new JSONObject(post.detail());
-        List<Photo> photos = post.getPhotos();
+    private void cachePhotos(List<TumblrPhoto> photos) {
+        for (TumblrPhoto photo : photos) {
+            String url = photo.getUrl();
+            if (imageCache.contains(url)) {
+                Bitmap bitmap = imageCache.get(url);
+                File imageFile = new File(
+                        getCacheDir(), Base64.encodeToString(url.getBytes(), Base64.URL_SAFE));
 
-        for (Photo photo : photos) {
-            JSONObject jphoto = new JSONObject();
+                FileOutputStream outputStream;
+                try {
+                    outputStream = new FileOutputStream(imageFile);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream);
+                    outputStream.flush();
+                    outputStream.close();
+                } catch (FileNotFoundException e) {
+                    Log.w(TAG, "no file exist: " + imageFile.getName());
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    Log.w(TAG, "fail to cache file " + imageFile.getName());
+                    e.printStackTrace();
+                }
+            }
         }
 
-        return jobj;
     }
 
+    private boolean loadFromCache() {
+        File cacheFile = new File(getCacheDir(), JSON_CACHE_FILE);
+        if (!cacheFile.exists()) {
+            return false;
+        }
+
+        Log.d(TAG, "cache file exists");
+
+        FileInputStream inputStream;
+        try {
+            inputStream = new FileInputStream(cacheFile);
+            StringBuffer sb = new StringBuffer();
+            int c;
+            while ((c = inputStream.read()) != -1) {
+                sb.append((char) c);
+            }
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            if (jsonArray.length() == 0) {
+                return false;
+            }
+            loadFromJson(jsonArray);
+        } catch (FileNotFoundException e) {
+            return false;
+        } catch (IOException e) {
+            return false;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void loadFromJson(JSONArray jsonArray) throws JSONException {
+        int size = jsonArray.length();
+        List<TumblrPost> posts = new ArrayList<>();
+        for (int i=0; i<size; ++i) {
+            JSONObject jpost = jsonArray.getJSONObject(i);
+            TumblrPost post = TumblrPost.fromJson(jpost);
+
+            posts.add(post);
+        }
+
+        loadBitmapFromPostList(posts);
+
+        adapter.setData(posts);
+        adapter.notifyDataSetChanged();
+    }
+
+    private void loadBitmapFromPostList(List<TumblrPost> posts) {
+        for (TumblrPost post : posts) {
+            if (post.getType() == TumblrPost.Type.PHOTO) {
+                List<TumblrPhoto> photos = ((TumblrPhotoPost)post).getPhotos();
+                for (TumblrPhoto photo : photos) {
+                    File imageFile = new File(
+                            getCacheDir(),
+                            Base64.encodeToString(photo.getUrl().getBytes(), Base64.URL_SAFE));
+                    if (imageFile.exists()) {
+                        Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                        imageCache.set(photo.getUrl(), bitmap);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+    }
 }
 
 

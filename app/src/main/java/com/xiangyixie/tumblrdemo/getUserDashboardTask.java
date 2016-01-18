@@ -3,16 +3,18 @@ package com.xiangyixie.tumblrdemo;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 
 import com.tumblr.jumblr.JumblrClient;
+import com.tumblr.jumblr.types.Post;
+import com.xiangyixie.tumblrdemo.model.TumblrPost;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by xiangyixie on 1/16/16.
  */
-public class getUserDashboardTask extends AsyncTask<Void, Integer, Void> {
+public class getUserDashboardTask extends AsyncTask<Void, Integer, List<TumblrPost>> {
     private final String TAG = "getUserDashboardTask";
 
     private Activity activity = null;
@@ -45,24 +47,24 @@ public class getUserDashboardTask extends AsyncTask<Void, Integer, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected List<TumblrPost> doInBackground(Void... params) {
         // get UserDashboard posts request
-        List<com.tumblr.jumblr.types.Post> posts = client.userDashboard();
-        adapter.setData(posts);
+        List<Post> posts = client.userDashboard();
+        ArrayList<TumblrPost> tumblrPosts = new ArrayList<>();
 
-        Log.d(TAG, "posts size = " + posts.size());
-        for (com.tumblr.jumblr.types.Post p : posts) {
-            Log.d(TAG, "url = " + p.getPostUrl());
+        for (Post post : posts) {
+            TumblrPost tumblrPost = TumblrPost.fromJumblr(post);
+            tumblrPosts.add(tumblrPost);
         }
-        return null;
+
+        return tumblrPosts;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        // TODO Auto-generated method stub
-        super.onPostExecute(result);
+    protected void onPostExecute(List<TumblrPost> result) {
         // set refresh circle to stop.
         refreshLayout.setRefreshing(false);
+        adapter.setData(result);
         adapter.notifyDataSetChanged();
     }
 }

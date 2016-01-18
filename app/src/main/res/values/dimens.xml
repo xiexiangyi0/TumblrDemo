@@ -2,4 +2,5 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">9dp</dimen>
     <dimen name="activity_vertical_margin">9dp</dimen>
+    <dimen name="listview_text_horizontal_padding">9dp</dimen>
 </resources>
