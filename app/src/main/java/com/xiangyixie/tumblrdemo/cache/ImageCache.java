@@ -1,4 +1,4 @@
-package com.xiangyixie.tumblrdemo;
+package com.xiangyixie.tumblrdemo.cache;
 
 import android.graphics.Bitmap;
 import android.os.Build;

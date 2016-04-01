@@ -29,20 +29,33 @@ public class TumblrPost {
     }
 
     protected Post post;
+    protected String url;
+    protected String shortUrl;
     protected String blogName;
     protected long noteCount;
 
     public TumblrPost() {
         this.post = null;
     }
+
     public TumblrPost(Post post) {
         this.post = post;
         blogName = post.getBlogName();
         noteCount = post.getNoteCount();
+        url = post.getPostUrl();
+        shortUrl = post.getShortUrl();
     }
 
     public Type getType() {
         return Type.UNSUPPORT;
+    }
+
+    public String getUrl(){
+        return url;
+    }
+
+    public String getShortUrl(){
+        return shortUrl;
     }
 
     public String getBlogName() {

@@ -1,10 +1,12 @@
 package com.xiangyixie.tumblrdemo.view;
 
 import android.content.Context;
+import android.media.Image;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,6 +21,8 @@ public class PostView extends LinearLayout {
     private TextView blogNameView;
     private FrameLayout bodyView;
     private TextView noteView;
+    private ImageButton shareBtn;
+
     public PostView(Context context) {
         super(context);
         initLayout(context);
@@ -67,5 +71,12 @@ public class PostView extends LinearLayout {
 
         // body
         bodyView = (FrameLayout) findViewById(R.id.listview_item_body);
+
+        // share btn
+        shareBtn = (ImageButton) findViewById(R.id.shareBtn);
+    }
+
+    public ImageButton getShareBtn (){
+        return shareBtn;
     }
 }

@@ -14,7 +14,7 @@ public class AvatarUrlTask extends AsyncTask<Void, Integer, String> {
     private Integer size;
 
     private AvatarUrlListener listener;
-    AvatarUrlTask(String blogName, Integer size, AvatarUrlListener l) {
+    public AvatarUrlTask(String blogName, Integer size, AvatarUrlListener l) {
         this.blogName = blogName;
         this.size = size;
         this.listener = l;

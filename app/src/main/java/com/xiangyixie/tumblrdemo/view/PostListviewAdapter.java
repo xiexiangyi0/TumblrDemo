@@ -1,11 +1,14 @@
-package com.xiangyixie.tumblrdemo;
+package com.xiangyixie.tumblrdemo.view;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.xiangyixie.tumblrdemo.model.TumblrPhoto;
@@ -23,7 +26,7 @@ import java.util.List;
  */
 
 
-public class ListviewAdapter extends BaseAdapter {
+public class PostListviewAdapter extends BaseAdapter {
     public interface TumblrLoader {
         void loadPostImage(ImageView imageView, String url);
         void loadAvatarImage(ImageView imageView, String blogName);
@@ -31,10 +34,12 @@ public class ListviewAdapter extends BaseAdapter {
 
     private final String TAG = "ListviewAdapter";
 
+    private Activity activity;
     private List<TumblrPost> data = null;
     private TumblrLoader tumblrLoader;
 
-    public ListviewAdapter(List<TumblrPost> data, TumblrLoader loader) {
+    public PostListviewAdapter(Activity activity, List<TumblrPost> data, TumblrLoader loader) {
+        this.activity = activity;
         this.data = data;
         this.tumblrLoader = loader;
     }
@@ -67,8 +72,10 @@ public class ListviewAdapter extends BaseAdapter {
             view = new PostView(parent.getContext());
         }
 
-        TumblrPost post = data.get(position);
-        Log.d(TAG, "post type " + post.getType());
+        final TumblrPost post = data.get(position);
+        Log.d(TAG, "post type = " + post.getType());
+
+
 
         //header
         //blog avatar
@@ -87,13 +94,30 @@ public class ListviewAdapter extends BaseAdapter {
         else if(post.getType() == TumblrPost.Type.TEXT){
             view.setBodyView(buildTextBody((TumblrTextPost) post, parent.getContext()));
         }
-        // default, empty
+        //default, empty post
         else {
             view.setBodyView(new View(parent.getContext()));
         }
 
         //footer
         view.setNote(post.getNoteCount());
+
+        //share button
+        ImageButton shareBtn = (ImageButton)view.getShareBtn();
+        shareBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                //share post short url
+                String shareMsg = post.getShortUrl();
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "See this Tumblr post:" );
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareMsg);
+                activity.startActivity(Intent.createChooser(sharingIntent, "Share via"));
+            }
+        });
+
+        //like button
 
         return view;
     }

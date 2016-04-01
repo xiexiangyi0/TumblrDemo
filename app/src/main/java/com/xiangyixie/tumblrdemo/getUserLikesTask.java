@@ -13,11 +13,9 @@ import com.xiangyixie.tumblrdemo.view.PostListviewAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by xiangyixie on 1/16/16.
- */
-public class getUserDashboardTask extends AsyncTask<Void, Integer, List<TumblrPost>> {
-    private final String TAG = "getUserDashboardTask";
+
+public class getUserLikesTask extends AsyncTask<Void, Integer, List<TumblrPost>> {
+    private final String TAG = "getUserLikesTask";
 
     private Activity activity = null;
     private static JumblrClient client = null;
@@ -26,7 +24,7 @@ public class getUserDashboardTask extends AsyncTask<Void, Integer, List<TumblrPo
     private SwipeRefreshLayout refreshLayout = null;
 
 
-    public getUserDashboardTask(Activity activity, PostListviewAdapter adapter, SwipeRefreshLayout refreshLayout) {
+    public getUserLikesTask(Activity activity, PostListviewAdapter adapter, SwipeRefreshLayout refreshLayout) {
         // Authenticate via OAuth
         client = new JumblrClient(
                 AppConfigKey.consumerKey,
@@ -51,12 +49,13 @@ public class getUserDashboardTask extends AsyncTask<Void, Integer, List<TumblrPo
     @Override
     protected List<TumblrPost> doInBackground(Void... params) {
         // get UserDashboard posts request
-        List<Post> posts = client.userDashboard();
+        List<Post> posts = client.userLikes();
         ArrayList<TumblrPost> tumblrPosts = new ArrayList<>();
 
         for (Post post : posts) {
             TumblrPost tumblrPost = TumblrPost.fromJumblr(post);
             tumblrPosts.add(tumblrPost);
+            post.getShortUrl();
         }
 
         return tumblrPosts;
@@ -66,9 +65,10 @@ public class getUserDashboardTask extends AsyncTask<Void, Integer, List<TumblrPo
     protected void onPostExecute(List<TumblrPost> result) {
         // set refresh circle to stop.
         refreshLayout.setRefreshing(false);
-        adapter.setData(result);
-        adapter.notifyDataSetChanged();
+        //adapter.setData(result);
+        //adapter.notifyDataSetChanged();
     }
 }
+
 
 

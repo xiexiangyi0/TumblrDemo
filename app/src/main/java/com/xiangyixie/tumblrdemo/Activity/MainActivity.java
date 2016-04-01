@@ -1,4 +1,4 @@
-package com.xiangyixie.tumblrdemo;
+package com.xiangyixie.tumblrdemo.Activity;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -15,9 +15,17 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.xiangyixie.tumblrdemo.AsyncDrawable;
+import com.xiangyixie.tumblrdemo.AvatarUrlTask;
+import com.xiangyixie.tumblrdemo.ImageLoaderTask;
+import com.xiangyixie.tumblrdemo.R;
+import com.xiangyixie.tumblrdemo.cache.ImageCache;
+import com.xiangyixie.tumblrdemo.getUserDashboardTask;
+import com.xiangyixie.tumblrdemo.getUserLikesTask;
 import com.xiangyixie.tumblrdemo.model.TumblrPhoto;
 import com.xiangyixie.tumblrdemo.model.TumblrPhotoPost;
 import com.xiangyixie.tumblrdemo.model.TumblrPost;
+import com.xiangyixie.tumblrdemo.view.PostListviewAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private static final String JSON_CACHE_FILE = "TumblrDemeJsonCache";
 
     private ListView listview = null;
-    private ListviewAdapter adapter = null;
+    private PostListviewAdapter adapter = null;
+    private PostListviewAdapter adapter2 = null;
     private SwipeRefreshLayout refreshLayout = null;
 
     private boolean needRefresh = false;
@@ -50,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     private WeakReference<getUserDashboardTask> refreshTaskRef;
 
-    private ListviewAdapter.TumblrLoader tumblrLoader = new ListviewAdapter.TumblrLoader() {
+    private PostListviewAdapter.TumblrLoader tumblrLoader = new PostListviewAdapter.TumblrLoader() {
         private Map<String, String> avatarUrlCache = new HashMap<>();
 
         @Override
@@ -71,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     }
                 }).execute();
             }
-
         }
     };
 
@@ -84,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         defaultImage = BitmapFactory.decodeResource(getResources(), R.drawable.loading);
 
         List<TumblrPost> data = new ArrayList<>();
-        adapter = new ListviewAdapter(data, tumblrLoader);
+        adapter = new PostListviewAdapter(this, data, tumblrLoader);
         listview = (ListView) findViewById(R.id.listview);
         listview.setAdapter(adapter);
 
@@ -134,8 +142,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         //get User Dashboard posts.
         imageCache = new ImageCache(1024 * 1024);
         getUserDashboardTask task = new getUserDashboardTask(this, adapter, refreshLayout);
+
+        getUserLikesTask task2 = new getUserLikesTask(this, adapter2, refreshLayout);
         refreshTaskRef = new WeakReference<getUserDashboardTask>(task);
         task.execute();
+        task2.execute();
     }
 
     private void loadBitmap(ImageView imageView, final String url) {

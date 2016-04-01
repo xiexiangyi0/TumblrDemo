@@ -8,7 +8,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/colorPrimary"
-    tools:context="com.xiangyixie.tumblrdemo.MainActivity">
+    tools:context=".Activity.MainActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/refresh"
