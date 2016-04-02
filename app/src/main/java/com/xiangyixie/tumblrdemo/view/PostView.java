@@ -1,7 +1,6 @@
 package com.xiangyixie.tumblrdemo.view;
 
 import android.content.Context;
-import android.media.Image;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +21,7 @@ public class PostView extends LinearLayout {
     private FrameLayout bodyView;
     private TextView noteView;
     private ImageButton shareBtn;
+    private ImageButton likeBtn;
 
     public PostView(Context context) {
         super(context);
@@ -46,7 +46,6 @@ public class PostView extends LinearLayout {
             String noteStr = "" + num + " notes";
             noteView.setText(noteStr);
         }
-
     }
 
     public void setBodyView(View v) {
@@ -74,9 +73,16 @@ public class PostView extends LinearLayout {
 
         // share btn
         shareBtn = (ImageButton) findViewById(R.id.shareBtn);
+
+        // like btn
+        likeBtn = (ImageButton) findViewById(R.id.likeBtn);
     }
 
     public ImageButton getShareBtn (){
         return shareBtn;
+    }
+
+    public ImageButton getLikeBtn (){
+        return likeBtn;
     }
 }

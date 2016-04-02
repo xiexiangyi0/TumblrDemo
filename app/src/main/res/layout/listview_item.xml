@@ -146,13 +146,12 @@
                 android:gravity="center_vertical|center_horizontal">
 
                 <ImageButton
-                    android:id="@+id/loveBtn"
+                    android:id="@+id/likeBtn"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:background="@color/transparent"
                     android:scaleType="fitXY"
-                    android:src="@drawable/love" />
-
+                    android:src="@drawable/like" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

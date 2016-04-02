@@ -6,9 +6,8 @@ import android.support.v4.widget.SwipeRefreshLayout;
 
 import com.tumblr.jumblr.JumblrClient;
 import com.tumblr.jumblr.types.Post;
-import com.xiangyixie.tumblrdemo.AppConfig.AppConfigKey;
+import com.xiangyixie.tumblrdemo.adapter.PostListviewAdapter;
 import com.xiangyixie.tumblrdemo.model.TumblrPost;
-import com.xiangyixie.tumblrdemo.view.PostListviewAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,16 +23,8 @@ public class getUserLikesTask extends AsyncTask<Void, Integer, List<TumblrPost>>
     private SwipeRefreshLayout refreshLayout = null;
 
 
-    public getUserLikesTask(Activity activity, PostListviewAdapter adapter, SwipeRefreshLayout refreshLayout) {
-        // Authenticate via OAuth
-        client = new JumblrClient(
-                AppConfigKey.consumerKey,
-                AppConfigKey.consumerSecret
-        );
-        client.setToken(
-                AppConfigKey.oAuthToken,
-                AppConfigKey.oAuthSecret
-        );
+    public getUserLikesTask(Activity activity, JumblrClient client, PostListviewAdapter adapter, SwipeRefreshLayout refreshLayout) {
+        this.client = client;
         this.adapter = adapter;
         this.activity = activity;
         this.refreshLayout = refreshLayout;

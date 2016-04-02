@@ -36,6 +36,7 @@ public class TumblrPhotoPost extends TumblrPost {
         super();
     }
 
+    @Override
     public Type getType() {
         return Type.PHOTO;
     }

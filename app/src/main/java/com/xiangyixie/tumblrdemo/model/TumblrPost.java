@@ -10,7 +10,8 @@ import org.json.JSONObject;
 /**
  * Created by xiangyixie on 1/17/16.
  */
-public class TumblrPost {
+public class TumblrPost{
+
     public enum Type {
         UNSUPPORT("unsupport"),
         PHOTO("photo"),
@@ -29,10 +30,13 @@ public class TumblrPost {
     }
 
     protected Post post;
+    protected Long postId;
+    protected Boolean isLiked;
+    protected String reblogKey;
     protected String url;
     protected String shortUrl;
     protected String blogName;
-    protected long noteCount;
+    protected Long noteCount;
 
     public TumblrPost() {
         this.post = null;
@@ -40,14 +44,22 @@ public class TumblrPost {
 
     public TumblrPost(Post post) {
         this.post = post;
+        postId = post.getId();
+        isLiked = post.isLiked();
+        reblogKey = post.getReblogKey();
         blogName = post.getBlogName();
         noteCount = post.getNoteCount();
         url = post.getPostUrl();
         shortUrl = post.getShortUrl();
     }
 
+
     public Type getType() {
         return Type.UNSUPPORT;
+    }
+
+    public Post getPost(){
+        return post;
     }
 
     public String getUrl(){
@@ -62,8 +74,20 @@ public class TumblrPost {
         return blogName;
     }
 
-    public long getNoteCount() {
+    public Long getNoteCount() {
         return noteCount;
+    }
+
+    public boolean getIsLiked(){
+        return isLiked;
+    }
+
+    public String getReblogKey(){
+        return reblogKey;
+    }
+
+    public Long getPostId(){
+        return postId;
     }
 
     public JSONObject toJson() throws JSONException {

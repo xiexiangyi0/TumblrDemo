@@ -24,6 +24,7 @@ public class TumblrTextPost extends TumblrPost {
         super();
     }
 
+    @Override
     public Type getType() {
         return Type.TEXT;
     }
@@ -51,6 +52,4 @@ public class TumblrTextPost extends TumblrPost {
         post.body = new String(Base64.decode(jpost.getString("body"), Base64.URL_SAFE));
         return post;
     }
-
-
 }

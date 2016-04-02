@@ -1,8 +1,9 @@
-package com.xiangyixie.tumblrdemo.view;
+package com.xiangyixie.tumblrdemo.adapter;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +13,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.tumblr.jumblr.JumblrClient;
+import com.tumblr.jumblr.types.Post;
+import com.xiangyixie.tumblrdemo.R;
 import com.xiangyixie.tumblrdemo.model.TumblrPhoto;
 import com.xiangyixie.tumblrdemo.model.TumblrPhotoPost;
 import com.xiangyixie.tumblrdemo.model.TumblrPost;
@@ -35,11 +39,13 @@ public class PostListviewAdapter extends BaseAdapter {
     private final String TAG = "ListviewAdapter";
 
     private Activity activity;
+    private JumblrClient client;
     private List<TumblrPost> data = null;
     private TumblrLoader tumblrLoader;
 
-    public PostListviewAdapter(Activity activity, List<TumblrPost> data, TumblrLoader loader) {
+    public PostListviewAdapter(Activity activity, JumblrClient client, List<TumblrPost> data, TumblrLoader loader) {
         this.activity = activity;
+        this.client = client;
         this.data = data;
         this.tumblrLoader = loader;
     }
@@ -102,6 +108,7 @@ public class PostListviewAdapter extends BaseAdapter {
         //footer
         view.setNote(post.getNoteCount());
 
+
         //share button
         ImageButton shareBtn = (ImageButton)view.getShareBtn();
         shareBtn.setOnClickListener(new View.OnClickListener(){
@@ -113,11 +120,50 @@ public class PostListviewAdapter extends BaseAdapter {
                 String shareMsg = post.getShortUrl();
                 sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "See this Tumblr post:" );
                 sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareMsg);
+
                 activity.startActivity(Intent.createChooser(sharingIntent, "Share via"));
             }
         });
 
         //like button
+        final ImageButton likeBtn = (ImageButton)view.getLikeBtn();
+        final boolean liked = post.getIsLiked();
+        if(liked){
+            likeBtn.setImageResource(R.drawable.like_red);
+        }else{
+            likeBtn.setImageResource(R.drawable.like);
+        }
+
+        final String reblogKey = post.getReblogKey();
+        final Long postId = post.getPostId();
+        final Post jumblr_post = post.getPost();
+        likeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!liked){
+                        likeBtn.setImageResource(R.drawable.like_red);
+                        new AsyncTask<Void, Void, Void>() {
+                            @Override
+                            protected Void doInBackground(Void... params) {
+                                client.like(postId, reblogKey);
+
+                                return null;
+                            }
+                        }.execute();
+                }else{
+                        likeBtn.setImageResource(R.drawable.like);
+                        new AsyncTask<Void, Void, Void>() {
+
+                            @Override
+                            protected Void doInBackground(Void... params) {
+                                client.unlike(postId, reblogKey);
+                                return null;
+                            }
+                        }.execute();
+
+                }
+            }
+        });
 
         return view;
     }
