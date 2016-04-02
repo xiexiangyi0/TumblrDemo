@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.xiangyixie.tumblrdemo.model.TumblrPhoto;
 import com.xiangyixie.tumblrdemo.model.TumblrPhotoPost;
@@ -24,7 +25,6 @@ import java.util.List;
 /**
  * Created by xiangyixie on 1/15/16.
  */
-
 
 public class PostListviewAdapter extends BaseAdapter {
     public interface TumblrLoader {
@@ -192,6 +192,10 @@ public class PostListviewAdapter extends BaseAdapter {
         return bodyView;
     }
 
-
+    static class ViewHolder
+    {
+        TextView text;
+        ImageView icon;
+    }
 }
 
