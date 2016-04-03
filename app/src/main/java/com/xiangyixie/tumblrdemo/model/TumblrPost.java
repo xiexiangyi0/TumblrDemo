@@ -29,6 +29,7 @@ public class TumblrPost{
 
     }
 
+    protected Type type;
     protected Post post;
     protected Long postId;
     protected Boolean isLiked;
@@ -39,11 +40,12 @@ public class TumblrPost{
     protected Long noteCount;
 
     public TumblrPost() {
-        this.post = null;
+
     }
 
     public TumblrPost(Post post) {
         this.post = post;
+        type = Type.UNSUPPORT;
         postId = post.getId();
         isLiked = post.isLiked();
         reblogKey = post.getReblogKey();
@@ -51,11 +53,12 @@ public class TumblrPost{
         noteCount = post.getNoteCount();
         url = post.getPostUrl();
         shortUrl = post.getShortUrl();
+        noteCount = post.getNoteCount();
     }
 
 
     public Type getType() {
-        return Type.UNSUPPORT;
+        return type;
     }
 
     public Post getPost(){
@@ -82,6 +85,14 @@ public class TumblrPost{
         return isLiked;
     }
 
+    public void setLiked(Boolean flag){
+        isLiked = flag;
+    }
+
+    public void setNoteCount(Long count){
+        noteCount = count;
+    }
+
     public String getReblogKey(){
         return reblogKey;
     }
@@ -98,6 +109,11 @@ public class TumblrPost{
         }
         jpost.put("blog_name", getBlogName());
         jpost.put("note_count", getNoteCount());
+        jpost.put("is_liked", getIsLiked());
+        jpost.put("url", getUrl());
+        jpost.put("short_url", getShortUrl());
+        jpost.put("reblogKey", getReblogKey());
+        jpost.put("post_id", getPostId());
 
         return jpost;
     }
@@ -126,6 +142,12 @@ public class TumblrPost{
     static TumblrPost parseJson(JSONObject jpost, TumblrPost post) throws JSONException {
         post.blogName = jpost.getString("blog_name");
         post.noteCount = jpost.getLong("note_count");
+        post.isLiked = jpost.getBoolean("is_liked");
+        post.postId = jpost.getLong("post_id");
+        post.reblogKey = jpost.getString("reblogKey");
+        post.url = jpost.getString("url");
+        post.shortUrl = jpost.getString("short_url");
+
         return post;
     }
 }

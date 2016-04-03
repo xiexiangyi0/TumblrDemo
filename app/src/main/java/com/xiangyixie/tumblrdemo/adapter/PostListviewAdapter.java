@@ -9,12 +9,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.tumblr.jumblr.JumblrClient;
-import com.tumblr.jumblr.types.Post;
 import com.xiangyixie.tumblrdemo.R;
 import com.xiangyixie.tumblrdemo.model.TumblrPhoto;
 import com.xiangyixie.tumblrdemo.model.TumblrPhotoPost;
@@ -33,6 +32,7 @@ import java.util.List;
 public class PostListviewAdapter extends BaseAdapter {
     public interface TumblrLoader {
         void loadPostImage(ImageView imageView, String url);
+
         void loadAvatarImage(ImageView imageView, String blogName);
     }
 
@@ -82,7 +82,6 @@ public class PostListviewAdapter extends BaseAdapter {
         Log.d(TAG, "post type = " + post.getType());
 
 
-
         //header
         //blog avatar
         final ImageView avatarImageView = view.getAvatarView();
@@ -92,12 +91,14 @@ public class PostListviewAdapter extends BaseAdapter {
         String blogname = post.getBlogName();
         view.setBlogName(blogname);
 
+
+        //body
         //photo post
         if (post.getType() == TumblrPost.Type.PHOTO) {
             view.setBodyView(buildPhotoBody((TumblrPhotoPost) post, parent.getContext()));
         }
         //text post
-        else if(post.getType() == TumblrPost.Type.TEXT){
+        else if (post.getType() == TumblrPost.Type.TEXT) {
             view.setBodyView(buildTextBody((TumblrTextPost) post, parent.getContext()));
         }
         //default, empty post
@@ -105,62 +106,81 @@ public class PostListviewAdapter extends BaseAdapter {
             view.setBodyView(new View(parent.getContext()));
         }
 
-        //footer
-        view.setNote(post.getNoteCount());
 
+
+        //footer
+        //note count
+        view.setNoteView(post.getNoteCount());
+        final TextView noteCountTxtView = (TextView) view.getNoteCountView();
 
         //share button
-        ImageButton shareBtn = (ImageButton)view.getShareBtn();
-        shareBtn.setOnClickListener(new View.OnClickListener(){
+        LinearLayout shareLayout = (LinearLayout) view.getShareLayout();
+        shareLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
                 Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
                 sharingIntent.setType("text/plain");
                 //share post short url
                 String shareMsg = post.getShortUrl();
-                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "See this Tumblr post:" );
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "See this Tumblr post:");
                 sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareMsg);
 
                 activity.startActivity(Intent.createChooser(sharingIntent, "Share via"));
             }
         });
 
-        //like button
-        final ImageButton likeBtn = (ImageButton)view.getLikeBtn();
-        final boolean liked = post.getIsLiked();
-        if(liked){
-            likeBtn.setImageResource(R.drawable.like_red);
-        }else{
-            likeBtn.setImageResource(R.drawable.like);
+        //like button initiate
+        final LinearLayout likeLayout = (LinearLayout) view.getLikeLayout();
+        final ImageView likeImg = (ImageView) view.getLikeImg();
+        if (post.getIsLiked()) {
+            likeImg.setImageResource(R.drawable.like_red);
+        } else {
+            likeImg.setImageResource(R.drawable.like);
         }
 
+        // click 'like'
         final String reblogKey = post.getReblogKey();
         final Long postId = post.getPostId();
-        final Post jumblr_post = post.getPost();
-        likeBtn.setOnClickListener(new View.OnClickListener() {
+        likeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!liked){
-                        likeBtn.setImageResource(R.drawable.like_red);
-                        new AsyncTask<Void, Void, Void>() {
-                            @Override
-                            protected Void doInBackground(Void... params) {
-                                client.like(postId, reblogKey);
+                if (!post.getIsLiked()) {
+                    likeImg.setImageResource(R.drawable.like_red);
+                    // 'like' action backend operation
+                    new AsyncTask<Void, Void, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... params) {
+                            client.like(postId, reblogKey);
+                            return null;
+                        }
+                    }.execute();
+                    // set 'liked' flag for TumblrPost post wrapper
+                    post.setLiked(true);
+                    // note count + 1 in UI
+                    Long noteCount = post.getNoteCount() + 1;
+                    post.setNoteCount(noteCount);
+                    noteCountTxtView.setText(noteCount + " notes");
 
-                                return null;
-                            }
-                        }.execute();
-                }else{
-                        likeBtn.setImageResource(R.drawable.like);
-                        new AsyncTask<Void, Void, Void>() {
-
-                            @Override
-                            protected Void doInBackground(Void... params) {
-                                client.unlike(postId, reblogKey);
-                                return null;
-                            }
-                        }.execute();
-
+                } else {
+                    likeImg.setImageResource(R.drawable.like);
+                    // 'unlike' action backend operation
+                    new AsyncTask<Void, Void, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... params) {
+                            client.unlike(postId, reblogKey);
+                            return null;
+                        }
+                    }.execute();
+                    // set 'unliked' flag for TumblrPost post wrapper
+                    post.setLiked(false);
+                    // note count - 1 in UI
+                    Long noteCount = post.getNoteCount() - 1;
+                    post.setNoteCount(noteCount);
+                    if(noteCount > 0){
+                        noteCountTxtView.setText(noteCount + " notes");
+                    }else{
+                        noteCountTxtView.setText("");
+                    }
                 }
             }
         });
@@ -213,7 +233,7 @@ public class PostListviewAdapter extends BaseAdapter {
         //tags
         List<String> tags = photoPost.getTags();
         String tagStr = "";
-        for(String tag : tags){
+        for (String tag : tags) {
             tagStr = tagStr + " #" + tag;
         }
         photoView.setTagText(tagStr);
@@ -238,8 +258,7 @@ public class PostListviewAdapter extends BaseAdapter {
         return bodyView;
     }
 
-    static class ViewHolder
-    {
+    static class ViewHolder {
         TextView text;
         ImageView icon;
     }

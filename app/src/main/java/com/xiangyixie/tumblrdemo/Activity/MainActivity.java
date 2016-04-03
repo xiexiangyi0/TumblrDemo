@@ -238,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
 
         if (AppSwitch.USE_SQL_CACHE) {
-            
+
             return;
         }
 

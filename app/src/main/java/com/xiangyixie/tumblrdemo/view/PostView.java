@@ -5,7 +5,6 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,8 +19,11 @@ public class PostView extends LinearLayout {
     private TextView blogNameView;
     private FrameLayout bodyView;
     private TextView noteView;
-    private ImageButton shareBtn;
-    private ImageButton likeBtn;
+    private LinearLayout shareLayout;
+    private ImageView shareImg;
+    private LinearLayout likeLayout;
+    private ImageView likeImg;
+
 
     public PostView(Context context) {
         super(context);
@@ -41,7 +43,7 @@ public class PostView extends LinearLayout {
         blogNameView.setText(name);
     }
 
-    public void setNote(long num) {
+    public void setNoteView(long num) {
         if(num > 0){
             String noteStr = "" + num + " notes";
             noteView.setText(noteStr);
@@ -66,23 +68,37 @@ public class PostView extends LinearLayout {
         blogNameView.setTextSize(13);
 
         // note
-        noteView = (TextView) findViewById(R.id.footer_note);
+        noteView = (TextView) findViewById(R.id.noteCount);
 
         // body
         bodyView = (FrameLayout) findViewById(R.id.listview_item_body);
 
         // share btn
-        shareBtn = (ImageButton) findViewById(R.id.shareBtn);
+        shareLayout = (LinearLayout) findViewById(R.id.shareBtn);
+        shareImg = (ImageView) findViewById(R.id.shareImgView);
 
         // like btn
-        likeBtn = (ImageButton) findViewById(R.id.likeBtn);
+        likeLayout = (LinearLayout) findViewById(R.id.likeBtn);
+        likeImg = (ImageView) findViewById(R.id.likeImgView);
     }
 
-    public ImageButton getShareBtn (){
-        return shareBtn;
+    public LinearLayout getShareLayout (){
+        return shareLayout;
     }
 
-    public ImageButton getLikeBtn (){
-        return likeBtn;
+    public LinearLayout getLikeLayout (){
+        return likeLayout;
+    }
+
+    public ImageView getShareImg(){
+        return shareImg;
+    }
+
+    public ImageView getLikeImg(){
+        return likeImg;
+    }
+
+    public TextView getNoteCountView(){
+        return noteView;
     }
 }

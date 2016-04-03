@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class getUserLikesTask extends AsyncTask<Void, Integer, List<TumblrPost>> {
+public class getUserLikesPostsTask extends AsyncTask<Void, Integer, List<TumblrPost>> {
     private final String TAG = "getUserLikesTask";
 
     private Activity activity = null;
@@ -23,7 +23,7 @@ public class getUserLikesTask extends AsyncTask<Void, Integer, List<TumblrPost>>
     private SwipeRefreshLayout refreshLayout = null;
 
 
-    public getUserLikesTask(Activity activity, JumblrClient client, PostListviewAdapter adapter, SwipeRefreshLayout refreshLayout) {
+    public getUserLikesPostsTask(Activity activity, JumblrClient client, PostListviewAdapter adapter, SwipeRefreshLayout refreshLayout) {
         this.client = client;
         this.adapter = adapter;
         this.activity = activity;

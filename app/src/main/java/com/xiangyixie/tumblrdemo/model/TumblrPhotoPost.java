@@ -1,6 +1,7 @@
 package com.xiangyixie.tumblrdemo.model;
 
 import android.util.Base64;
+import android.util.Log;
 
 import com.tumblr.jumblr.types.Photo;
 import com.tumblr.jumblr.types.PhotoPost;
@@ -16,12 +17,14 @@ import java.util.List;
  * Created by xiangyixie on 1/17/16.
  */
 public class TumblrPhotoPost extends TumblrPost {
+
     private String caption;
     private List<String> tags;
     private List<TumblrPhoto> photos;
 
     public TumblrPhotoPost(PhotoPost post) {
         super(post);
+        Log.d("MYDEBUG", post.toString());
         List<Photo> jumblrPhotos = photoPost().getPhotos();
         photos = new ArrayList<>();
         for (Photo photo : jumblrPhotos) {
