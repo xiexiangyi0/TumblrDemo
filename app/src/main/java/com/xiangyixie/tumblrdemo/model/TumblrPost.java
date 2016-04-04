@@ -7,6 +7,9 @@ import com.tumblr.jumblr.types.TextPost;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by xiangyixie on 1/17/16.
  */
@@ -17,7 +20,18 @@ public class TumblrPost{
         PHOTO("photo"),
         TEXT("text");
 
+        private static final Map<String, Type> map = new HashMap<>();
         private String type;
+
+        static {
+            for (Type en : values()) {
+                map.put(en.type, en);
+            }
+        }
+
+        public static Type valueFor(String name) {
+            return map.get(name);
+        }
 
         Type(String t) {
             type = t;
@@ -68,37 +82,50 @@ public class TumblrPost{
     public String getUrl(){
         return url;
     }
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public String getShortUrl(){
         return shortUrl;
+    }
+    public void setShortUrl(String url) {
+        this.shortUrl = url;
     }
 
     public String getBlogName() {
         return blogName;
     }
+    public void setBlogName(String name) {
+        this.blogName = name;
+    }
 
     public Long getNoteCount() {
         return noteCount;
+    }
+    public void setNoteCount(Long count) {
+        this.noteCount = count;
     }
 
     public boolean getIsLiked(){
         return isLiked;
     }
-
     public void setLiked(Boolean flag){
         isLiked = flag;
-    }
-
-    public void setNoteCount(Long count){
-        noteCount = count;
     }
 
     public String getReblogKey(){
         return reblogKey;
     }
+    public void setReblogKey(String key) {
+        this.reblogKey = key;
+    }
 
     public Long getPostId(){
         return postId;
+    }
+    public void setPostId(Long id) {
+        this.postId = id;
     }
 
     public JSONObject toJson() throws JSONException {

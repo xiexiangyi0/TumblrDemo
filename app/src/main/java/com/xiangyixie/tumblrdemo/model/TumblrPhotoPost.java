@@ -47,13 +47,22 @@ public class TumblrPhotoPost extends TumblrPost {
     public String getCaption() {
         return caption == null ? "" : caption;
     }
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
 
     public List<String> getTags() {
         return tags;
     }
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
 
     public List<TumblrPhoto> getPhotos() {
         return photos;
+    }
+    public void setPhotos(List<TumblrPhoto> photos) {
+        this.photos = photos;
     }
 
     public JSONObject toJson() throws JSONException {

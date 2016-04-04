@@ -32,9 +32,15 @@ public class TumblrTextPost extends TumblrPost {
     public String getTitle() {
         return title == null ? "" : title;
     }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
     public String getBody() {
         return body == null ? "" : body;
+    }
+    public void setBody(String body) {
+        this.body = body;
     }
 
     public JSONObject toJson() throws JSONException {

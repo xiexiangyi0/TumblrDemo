@@ -13,7 +13,7 @@ public class TumblrPhoto {
     private Photo photo;
     private String url;
 
-    private TumblrPhoto() {
+    public TumblrPhoto() {
 
     }
 
@@ -24,6 +24,9 @@ public class TumblrPhoto {
 
     public String getUrl() {
         return url;
+    }
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public JSONObject toJson() throws JSONException {

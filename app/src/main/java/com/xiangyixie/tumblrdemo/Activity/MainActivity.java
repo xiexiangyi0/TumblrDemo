@@ -24,6 +24,7 @@ import com.xiangyixie.tumblrdemo.ImageLoaderTask;
 import com.xiangyixie.tumblrdemo.R;
 import com.xiangyixie.tumblrdemo.adapter.PostListviewAdapter;
 import com.xiangyixie.tumblrdemo.cache.ImageCache;
+import com.xiangyixie.tumblrdemo.cache.PostCache;
 import com.xiangyixie.tumblrdemo.getUserDashboardTask;
 import com.xiangyixie.tumblrdemo.model.TumblrPhoto;
 import com.xiangyixie.tumblrdemo.model.TumblrPhotoPost;
@@ -52,13 +53,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private JumblrClient client = null;
     private ListView listview = null;
     private PostListviewAdapter adapter = null;
-    private PostListviewAdapter adapter2 = null;
     private SwipeRefreshLayout refreshLayout = null;
-
-    private boolean needRefresh = false;
 
     private Bitmap defaultImage;
     private ImageCache imageCache;
+
+    private PostCache postCache;
 
     private WeakReference<getUserDashboardTask> refreshTaskRef;
 
@@ -105,6 +105,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         imageCache = new ImageCache(1024 * 1024);
         defaultImage = BitmapFactory.decodeResource(getResources(), R.drawable.loading);
+
+        postCache = new PostCache(this);
 
         List<TumblrPost> data = new ArrayList<>();
         adapter = new PostListviewAdapter(this, client, data, tumblrLoader);
@@ -238,7 +240,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
 
         if (AppSwitch.USE_SQL_CACHE) {
-
+            postCache.reset();
+            postCache.save(data);
+            for (TumblrPost post : data) {
+                if (post.getType() == TumblrPost.Type.PHOTO) {
+                    cachePhotos(((TumblrPhotoPost)post).getPhotos());
+                }
+            }
             return;
         }
 
@@ -302,6 +310,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     private boolean loadFromCache() {
+        if (AppSwitch.USE_SQL_CACHE) {
+            List<TumblrPost> posts = postCache.load();
+            if (posts == null || posts.isEmpty()) {
+                return false;
+            }
+            loadBitmapFromPostList(posts);
+            adapter.setData(posts);
+            adapter.notifyDataSetChanged();
+            return true;
+        }
         File cacheFile = new File(getCacheDir(), JSON_CACHE_FILE);
         if (!cacheFile.exists()) {
             return false;
